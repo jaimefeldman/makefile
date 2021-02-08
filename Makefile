@@ -57,8 +57,8 @@ C_OBJECTS_FILES := $(foreach F,$(ALLCS),$(call C2OBJ,$(F)))
 TERMINAL_COLS_SIZE      :=$(shell tput cols)
 TERMIANL_HALF_COLS_SIZE :=$$(($(TERMINAL_COLS_SIZE) / 2 - 10))
 
-.PHONY: info clean project
-.SILENT: clean $(APP) $(OBJECTS_FILES) $(OBJSUBDIRS) $(C_OBJECTS_FILES) 
+.PHONY: info clean project debug memchk
+.SILENT: clean debug memchk $(APP) $(OBJECTS_FILES) $(OBJSUBDIRS) $(C_OBJECTS_FILES) 
 
 $(APP): $(OBJSUBDIRS) $(OBJECTS_FILES) $(C_OBJECTS_FILES)
 
@@ -86,11 +86,20 @@ $(OBJ)/%.o : $(SRC)/%.c
 	$(C) -o $(patsubst $(SRC)%,$(OBJ)%,$@) -c $^ $(CFLAGAS)
 	$(call PRINTOK,"Copilando "$^)
 
-info:
+debug:
 	$(info $(ALLCPPS))
 	$(info $(OBJECTS_FILES))
 	$(info $(ALLCS))
 	$(info $(C_OBJECTS_FILES))
+
+info:
+	@echo " + Información de la compilación de $(APP) +"
+	@echo " - Nivel de optimización: 3"
+	@echo " - Usando el standard c++ 17"
+	@echo " - Todos los Warning activados."
+	@echo " - Desactivados los avisos de extenciones de c++ 11"
+	
+CCFLAGAS := -std=c++17 -Wall -O3 -Wno-c++11-extensions
 
 $(OBJSUBDIRS):
 	$(MKDIR) $(OBJSUBDIRS) 
@@ -106,4 +115,7 @@ clean:
 	else \
 		$(call PRINTFAIL,"El proyecto se encuentra limpio"); \
     fi
+
+memchk:
+	@echo "+ Chequeando fugas de memoria +"
 
