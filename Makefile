@@ -23,7 +23,7 @@ endef
 define PRINTFAIL
 	echo -n ${1}; \
 	printf %$$(($(TERMIANL_HALF_COLS_SIZE) - $(shell echo -n $(1)} | wc -c)))s | tr " " "."; \
-	echo -e "${NOC}[${red}STOP${NOC}]${girs}"
+	echo -e "${NOC}[${red}FAIL${NOC}]${girs}"
 endef
 
 define MESSAGE
@@ -72,8 +72,8 @@ TERMINAL_COLS_SIZE      :=$(shell tput cols)
 TERMIANL_HALF_COLS_SIZE :=$$(($(TERMINAL_COLS_SIZE) / 2 - 10))
 
 
-.PHONY: info clean project debug memchk test
-.SILENT: clean debug memchk test $(APP) $(OBJECTS_FILES) $(OBJSUBDIRS) $(C_OBJECTS_FILES) 
+.PHONY: info clean project debug memchk test gitclean
+.SILENT: clean debug memchk test gitclean $(APP) $(OBJECTS_FILES) $(OBJSUBDIRS) $(C_OBJECTS_FILES) 
 
 
 UNAME   := $(shell uname)
@@ -105,6 +105,14 @@ else ifeq (clean, $(CMDGOAL))
 	elif [ $(UNAME) == "Linux" ]; then \
 		echo -e "[ ${yellowdark}Limpiando (${yellow}$(PROJECT_NAME)${yellowdark}) - ${greenDark}Linux${NOC} ] ${gris}${FECHA_HOY}"; \
 	fi)
+
+else ifeq (gitclean, $(CMDGOAL))
+	xx:=$(shell if [ $(UNAME) == "Darwin" ]; then \
+		echo -e "[ ${yellowdark}Limpiando proyecto (${yellow}$(PROJECT_NAME)${yellowdark}) para usar ${yellow}Git ${yellowdark} - ${blue}MacOS${NOC} ] ${gris}${FECHA_HOY}"; \
+	elif [ $(UNAME) == "Linux" ]; then \
+		echo -e "[ ${yellowdark}Limpiando proyecto (${yellow}$(PROJECT_NAME)${yellowdark}) para usar ${yellow}Git${yellowdark} - ${greenDark}Linux${NOC} ] ${gris}${FECHA_HOY}"; \
+	fi)
+
 
 else
 	xx:=$(shell if [ $(UNAME) == "Darwin" ]; then \
@@ -181,3 +189,27 @@ memchk:
 		echo -e "[${red}Error${NOC}]: ${gris}No existe ${APP}, \"ejecute make primero para crear el ejecutable..\"${NOC}"; \
 	fi
 	echo -en "${NOC}"
+
+gitclean:
+	if [ -d "bin" ]; then \
+		rm -rf bin; \
+		$(call PRINTOK, "Eliminando directorio bin"); \
+	fi
+	if [ -d "obj" ]; then \
+		rm -rf obj; \
+		$(call PRINTOK, "Eliminando directorio obj"); \
+	fi
+	if [ -L ${APPLINK} ]; then \
+		rm ${APPLINK}; \
+		$(call PRINTOK, "Elimando el enlaze simbolico: ${APPLINK}"); \
+	fi
+	if [ -f ".gitignore" ]; then \
+		$(call PRINTOK, "Chequeando la existencia del archivo .gitignore"); \
+	else \
+		$(call PRINTFAIL, "Chequeando la existencia del archivo .gitignore"); \
+	fi
+
+
+
+
+	
